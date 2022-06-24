@@ -79,7 +79,7 @@
     <div class="meetup-controls">
 
         {#if editMode === 'add'}    
-        <EditMeetup on:save="{addMeetup}"/>
+        <EditMeetup on:save="{addMeetup}" on:cancel={() => editMode = null} />
         {/if}
         
     </div>

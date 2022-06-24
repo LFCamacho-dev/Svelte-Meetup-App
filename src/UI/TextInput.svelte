@@ -4,7 +4,10 @@
     export let label;
     export let rows = null;
     export let value;
+    export let valid = true;
+    export let validityMessage = "";
 
+    let touched = false;
 </script>
 
 <style>
@@ -39,18 +42,27 @@
     margin: 0.25rem 0;
     }
 
+    .invalid {
+        border-color: red;
+        background: #ffdbdb;
+    }
+
+    .error-message{
+        color: red;
+        margin: 0.25rem 0;
+    }
+
 </style>
 
 <div class="form-control">
     <label for="{id}">{label}</label>
-    {#if controlType === "textarea"}
-    
-        <textarea id="{id}" rows="{rows}" value="{value}" on:input required></textarea>
-
+    {#if controlType === "textarea"}    
+        <textarea class:invalid="{!valid && touched}" id="{id}" rows="{rows}" value="{value}" on:input on:blur={() => touched = true} ></textarea>
     {:else}
+        <input class:invalid="{!valid && touched}" id="{id}" type="text" value="{value}" on:input on:blur={() => touched = true} />        
+    {/if}
 
-        <input id="{id}" type="text" value="{value}" on:input required>
-        
-        
+    {#if validityMessage && !valid && touched}
+        <p class="error-message">{validityMessage}</p>   
     {/if}
 </div>
