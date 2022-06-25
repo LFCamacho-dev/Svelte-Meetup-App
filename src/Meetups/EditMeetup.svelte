@@ -1,12 +1,15 @@
 <script>
+    import meetups from './meetups-store.js'
     import {createEventDispatcher} from 'svelte'
     import TextInput from '../UI/TextInput.svelte';
     import Button from '../UI/Button.svelte';
     import Modal from '../UI/Modal.svelte';
-    import { isEmpty, isValidEmail } from '../helpers/validation'
-
+    import { isEmpty, isValidEmail } from '../helpers/validation';
+    
     const dispatch = createEventDispatcher();
-
+    
+    
+    export let id = null;
 
     let title = '';
     let subtitle = '';
@@ -14,6 +17,24 @@
     let email = '';
     let description = '';
     let imageUrl = '';
+
+    if(id){
+
+        const unsub = meetups.subscribe(items => {
+
+            const selectedMeetup = items.find(m => m.id === id);          
+
+            title = selectedMeetup.title;
+            subtitle = selectedMeetup.subtitle;
+            address = selectedMeetup.address;
+            email = selectedMeetup.contactEmail;
+            description = selectedMeetup.description;
+            imageUrl = selectedMeetup.imageUrl;
+        });
+
+        unsub();
+    }
+   
 
     $: titleValid = !isEmpty(title);
     $: subtitleValid = !isEmpty(subtitle);
@@ -24,18 +45,32 @@
     $: formIsValid = titleValid && subtitleValid && addressValid && emailValid && descriptionValid && imageURLValid;
 
     function submitForm() {
-       dispatch('save', {
-        title: title,
-        subtitle: subtitle,
-        address: address,
-        email: email,
-        description: description,
-        imageUrl: imageUrl,
-       });
+        const meetupData = {
+            // id: Math.random().toString(),
+            title: title,
+            subtitle: subtitle,
+            description: description,
+            imageUrl: imageUrl,
+            address: address,
+            contactEmail: email
+        }
+        
+        if(id){
+            meetups.updateMeetup(id, meetupData)
+        } else {
+            meetups.addMeetup(meetupData)
+        }
+
+        dispatch('save');
     }
 
     function cancel() {
         dispatch('cancel');
+    }
+
+    function deleteMeetup() {
+        meetups.removeMeetup(id);
+        dispatch('save');
     }
 
 </script>
@@ -56,6 +91,10 @@
     <div slot="footer">
         <Button type="button" mode="outline" on:click="{cancel}">Cancel</Button>
         <Button type="button" on:click={submitForm} disabled={!formIsValid}>Save</Button>
+
+        {#if id}
+            <Button type="button" on:click="{deleteMeetup}" >Delete</Button>
+        {/if}
     </div>
 </Modal>
 
