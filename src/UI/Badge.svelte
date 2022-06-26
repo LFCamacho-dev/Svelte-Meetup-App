@@ -1,4 +1,8 @@
-<span>
+<script>
+    import { fade, slide, scale, fly } from 'svelte/transition';
+</script>
+
+<span transition:fly="{{ y: 10 }}">
     <slot/>
 </span>
 

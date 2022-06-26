@@ -1,8 +1,10 @@
 <script>
     import { createEventDispatcher } from 'svelte';
+    import { fade, slide, scale, fly } from 'svelte/transition';
+    import { flip } from 'svelte/animate';
     import MeetupItem from './MeetupItem.svelte'
     import MeetupFilter from './MeetupFilter.svelte';
-    import Button from '../UI/Button.svelte';
+    import Button from '../UI/Button.svelte';    
 
     const dispatch = createEventDispatcher();
 
@@ -26,7 +28,7 @@
         grid-gap: 1rem;
     }
 
-    #meetup-controls {
+    #meetup-controls, .meetups {
         margin: 1rem;
         display: flex;
         justify-content: space-between;
@@ -39,26 +41,32 @@
 }
 </style>
 
-<div id="meetup-controls">
+<section id="meetup-controls">
     <MeetupFilter on:select="{setFilter}"/>
     <Button on:click="{() => dispatch('add')}">New Meetup</Button>
-</div>
-
+</section>
+{#if filteredMeetups.length === 0}
+<section class="meetups">
+    <p>No meetups found, you can start adding some.</p>
+</section>
+{:else}
 <section id="meetups">
-    {#each filteredMeetups as meetup}
-    
+    {#each filteredMeetups as meetup (meetup.id)}
+    <div transition:scale animate:flip={{delay: 150, duration: 300}}>
         <MeetupItem  
-            id = {meetup.id}
-            title = {meetup.title}
-            subtitle = {meetup.subtitle}
-            image = {meetup.imageUrl}
-            description = {meetup.description}
-            address = {meetup.address}    
-            email = {meetup.contactEmail}
-            isFav={meetup.isFavorite}
-            on:showdetails
-            on:edit
+        id = {meetup.id}
+        title = {meetup.title}
+        subtitle = {meetup.subtitle}
+        image = {meetup.imageUrl}
+        description = {meetup.description}
+        address = {meetup.address}    
+        email = {meetup.contactEmail}
+        isFav={meetup.isFavorite}
+        on:showdetails
+        on:edit
         />
+    </div>
     {/each}
     
 </section>
+{/if}

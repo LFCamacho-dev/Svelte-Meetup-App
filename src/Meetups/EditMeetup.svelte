@@ -5,6 +5,7 @@
     import Button from '../UI/Button.svelte';
     import Modal from '../UI/Modal.svelte';
     import { isEmpty, isValidEmail } from '../helpers/validation';
+    // import Error from '../UI/Error.svelte';
     
     const dispatch = createEventDispatcher();
     
@@ -56,12 +57,47 @@
         }
         
         if(id){
-            meetups.updateMeetup(id, meetupData)
+            fetch(`https://svelte-course-32e52-default-rtdb.firebaseio.com/meetups/${id}.json`, {
+                method: 'PATCH',
+                body: JSON.stringify(meetupData),
+                header: { 'Content-Type': 'application/json'}
+            })
+            .then(res => {
+                if (!res.ok){
+                    throw new Error ('Failed! An error occurred, please try again.');
+                }
+                meetups.updateMeetup(id, meetupData)
+            })
+            .catch(error => {
+                console.log(error)
+            });
         } else {
-            meetups.addMeetup(meetupData)
+            fetch("https://svelte-course-32e52-default-rtdb.firebaseio.com/meetups.json", {
+                method: 'POST',
+                body: JSON.stringify({...meetupData, isFavorite: false}),
+                header: { 'Content-Type': 'application/json'}
+            })
+            .then(res => {
+                if (!res.ok){
+                    throw new Error ('Failed! An error occurred, please try again.');
+                }
+                return res.json();
+            })
+            .then(data => {
+                console.log(data);
+                meetups.addMeetup({
+                    ...meetupData, 
+                    isFavorite: false, 
+                    id: data.name
+                })
+                meetups.addMeetup(meetupData);
+                dispatch('save');
+            })
+            .catch(err => {
+                console.log(err);
+            });
         }
 
-        dispatch('save');
     }
 
     function cancel() {
@@ -69,7 +105,16 @@
     }
 
     function deleteMeetup() {
-        meetups.removeMeetup(id);
+        fetch(`https://svelte-course-32e52-default-rtdb.firebaseio.com/meetups/${id}.json`, {
+                method: 'DELETE'
+            })
+            .then(res => {
+                if (!res.ok){
+                    throw new Error ('Failed! An error occurred, please try again.');
+                }
+                meetups.removeMeetup(id);
+            })
+            .catch(err => console.log(err));
         dispatch('save');
     }
 
